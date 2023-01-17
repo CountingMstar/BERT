@@ -9,6 +9,7 @@ class BERTLM(nn.Module):
     Next Sentence Prediction Model + Masked Language Model
     """
 
+    # bert: BERT : python type annotation(주석), 해당 변수의 type(int, str등)을 직접 주석으로 작성해 알려줌
     def __init__(self, bert: BERT, vocab_size):
         """
         :param bert: BERT model which should be trained
@@ -17,11 +18,13 @@ class BERTLM(nn.Module):
 
         super().__init__()
         self.bert = bert
+
         self.next_sentence = NextSentencePrediction(self.bert.hidden)
         self.mask_lm = MaskedLanguageModel(self.bert.hidden, vocab_size)
 
     def forward(self, x, segment_label):
         x = self.bert(x, segment_label)
+
         return self.next_sentence(x), self.mask_lm(x)
 
 

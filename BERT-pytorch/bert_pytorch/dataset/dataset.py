@@ -14,6 +14,8 @@ class BERTDataset(Dataset):
         self.corpus_path = corpus_path
         self.encoding = encoding
 
+        print(on_memory)
+
         with open(corpus_path, "r", encoding=encoding) as f:
             if self.corpus_lines is None and not on_memory:
                 for _ in tqdm.tqdm(f, desc="Loading Dataset", total=corpus_lines):
@@ -78,6 +80,7 @@ class BERTDataset(Dataset):
                     tokens[i] = random.randrange(len(self.vocab))
 
                 # 10% randomly change token to current token
+                # self.vocab.stoi.get: 딕셔너리 원소값 부르기
                 else:
                     tokens[i] = self.vocab.stoi.get(token, self.vocab.unk_index)
 
@@ -99,6 +102,7 @@ class BERTDataset(Dataset):
             return t1, self.get_random_line(), 0
 
     def get_corpus_line(self, item):
+
         if self.on_memory:
             return self.lines[item][0], self.lines[item][1]
         else:

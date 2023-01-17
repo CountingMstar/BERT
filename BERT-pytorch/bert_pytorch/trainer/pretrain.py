@@ -90,19 +90,39 @@ class BERTTrainer:
                               total=len(data_loader),
                               bar_format="{l_bar}{r_bar}")
 
+        # print('#####################################################')
+        # print(data_loader)
+        # print(type(data_loader))
+        # print(data_iter)
+
         avg_loss = 0.0
         total_correct = 0
         total_element = 0
 
         for i, data in data_iter:
+            # print('====================================================')
+            # print(self.model)
+            # print(i)
+            # print(data)
             # 0. batch_data will be sent into the device(GPU or cpu)
             data = {key: value.to(self.device) for key, value in data.items()}
-
+            
             # 1. forward the next_sentence_prediction and masked_lm model
+            # print('@@@@@@@000000@@@@@@')
+            # print(data["bert_input"])
+            # print('@@@@@@@111111@@@@@@')
+            # print(data["segment_label"])
+            # print('@@@@@@@222222@@@@@@')
             next_sent_output, mask_lm_output = self.model.forward(data["bert_input"], data["segment_label"])
 
             # 2-1. NLL(negative log likelihood) loss of is_next classification result
             next_loss = self.criterion(next_sent_output, data["is_next"])
+            # print('#####################')
+            # print(next_sent_output.shape)
+            # print(next_sent_output)
+            # print(data["is_next"].shape)
+            # print(data["is_next"])
+            # print(next_loss)
 
             # 2-2. NLLLoss of predicting masked token word
             mask_loss = self.criterion(mask_lm_output.transpose(1, 2), data["bert_label"])

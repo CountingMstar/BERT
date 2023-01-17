@@ -36,11 +36,13 @@ class TorchVocab(object):
         """
         self.freqs = counter
         counter = counter.copy()
+        
         min_freq = max(min_freq, 1)
 
         self.itos = list(specials)
         # frequencies of special tokens are not counted when building vocabulary
         # in frequency order
+        # sepcial token은 카운트 하지 않음
         for tok in specials:
             del counter[tok]
 
@@ -56,6 +58,7 @@ class TorchVocab(object):
             self.itos.append(word)
 
         # stoi is simply a reverse dict for itos
+        # stoi, itos가 vocab corpus
         self.stoi = {tok: i for i, tok in enumerate(self.itos)}
 
         self.vectors = None
@@ -120,11 +123,12 @@ class WordVocab(Vocab):
     def __init__(self, texts, max_size=None, min_freq=1):
         print("Building Vocab")
         counter = Counter()
+
         for line in tqdm.tqdm(texts):
             if isinstance(line, list):
                 words = line
             else:
-                words = line.replace("\n", "").replace("\t", "").split()
+                words = line.replace("\n", "").replace("\t", " ").split()
 
             for word in words:
                 counter[word] += 1
@@ -133,7 +137,6 @@ class WordVocab(Vocab):
     def to_seq(self, sentence, seq_len=None, with_eos=False, with_sos=False, with_len=False):
         if isinstance(sentence, str):
             sentence = sentence.split()
-
         seq = [self.stoi.get(word, self.unk_index) for word in sentence]
 
         if with_eos:
@@ -161,6 +164,8 @@ class WordVocab(Vocab):
 
         return " ".join(words) if join else words
 
+    # @staticmethod: 클래스와는 독립적인 함수. 인스턴트 변수(self.~)를 사용하지 않음.
+    # "-> 'WordVocab'": 함수가 변환해주는 형식을 의미(int, str 등)
     @staticmethod
     def load_vocab(vocab_path: str) -> 'WordVocab':
         with open(vocab_path, "rb") as f:
@@ -168,6 +173,7 @@ class WordVocab(Vocab):
 
 
 def build():
+    # argparse: 어떤 인자를 받아 해당 인자에 따라 다른 실행을 함
     import argparse
 
     parser = argparse.ArgumentParser()
