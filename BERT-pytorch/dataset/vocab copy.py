@@ -1,8 +1,8 @@
 import pickle
 import tqdm
-from collections import Counter #???
+from collections import Counter
 
-class TorchVocab(object): # ???
+class TorchVocab(object):
     def __init__(self, counter, max_size=None, min_freq=1, specials=['<pad>', '<oov>'], 
                 vectors=None, unk_init=None, vectors_cache=None):
         # counter: 글자수 세기

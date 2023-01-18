@@ -119,6 +119,12 @@ class BERTDataset(Dataset):
             return self.lines[random.randrange(len(self.lines))][1]
         
         line = self.file.__next__()
+        if line is None:
+            self.file.close()
+            self.file = open(self.corpus_path, "r", encoding=self.encoding)
+            for _ in range(random.randint(self.corpus_lines if self.corpus_lines < 1000 else 1000)):
+                self.random_file.__next__()
+            line = self.random_file.__next__()        
         return line[:-1].split("\t")[1]
 
         
