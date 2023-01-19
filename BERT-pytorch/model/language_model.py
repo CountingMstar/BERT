@@ -15,7 +15,7 @@ class BERTLM(nn.Module):
         :param bert: BERT model which should be trained
         :param vocab_size: total vocab size for masked_lm
         """
-
+        # super().__init__(): 다른 클래스의 속성 및 메소드를 자동으로 불러와 해당 클래스에서 사용이 가능하도록 함 
         super().__init__()
         self.bert = bert
 
@@ -38,6 +38,7 @@ class NextSentencePrediction(nn.Module):
         :param hidden: BERT model output size
         """
         super().__init__()
+        # NSP는 이진분류 -> 2
         self.linear = nn.Linear(hidden, 2)
         self.softmax = nn.LogSoftmax(dim=-1)
 
@@ -57,6 +58,7 @@ class MaskedLanguageModel(nn.Module):
         :param vocab_size: total vocab size
         """
         super().__init__()
+        # MLM은 n-gram 분류 -> n=vocab_size
         self.linear = nn.Linear(hidden, vocab_size)
         self.softmax = nn.LogSoftmax(dim=-1)
 

@@ -21,6 +21,7 @@ class ScheduledOptim():
         self._optimizer.zero_grad()
 
     def _get_lr_scale(self):
+        # np.power(a, b) = ab: 숫자의 곱
         return np.min([
             np.power(self.n_current_steps, -0.5),
             np.power(self.n_warmup_steps, -1.5) * self.n_current_steps])

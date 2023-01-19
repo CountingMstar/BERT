@@ -1,23 +1,9 @@
 import torch.nn as nn
-
 from .attention import MultiHeadedAttention
 from .utils import SublayerConnection, PositionwiseFeedForward
 
-
 class TransformerBlock(nn.Module):
-    """
-    Bidirectional Encoder = Transformer (self-attention)
-    Transformer = MultiHead_Attention + Feed_Forward with sublayer connection
-    """
-
     def __init__(self, hidden, attn_heads, feed_forward_hidden, dropout):
-        """
-        :param hidden: hidden size of transformer
-        :param attn_heads: head sizes of multi-head attention
-        :param feed_forward_hidden: feed_forward_hidden, usually 4*hidden_size
-        :param dropout: dropout rate
-        """
-
         super().__init__()
         self.attention = MultiHeadedAttention(h=attn_heads, d_model=hidden)
         self.feed_forward = PositionwiseFeedForward(d_model=hidden, d_ff=feed_forward_hidden, dropout=dropout)
@@ -26,6 +12,8 @@ class TransformerBlock(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, x, mask):
+        # lamda: 함수를 선언하지 않고 바로 실행가능
+        # (lamda 매개변수: 함수)
         x = self.input_sublayer(x, lambda _x: self.attention.forward(_x, _x, _x, mask=mask))
         x = self.output_sublayer(x, self.feed_forward)
         return self.dropout(x)

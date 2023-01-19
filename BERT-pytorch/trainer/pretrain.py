@@ -100,19 +100,24 @@ class BERTTrainer:
         total_element = 0
 
         for i, data in data_iter:
-            # print('====================================================')
+            print('====================================================')
+            print(data_iter)
             # print(self.model)
             # print(i)
             # print(data)
+
             # 0. batch_data will be sent into the device(GPU or cpu)
             data = {key: value.to(self.device) for key, value in data.items()}
-            
+
             # 1. forward the next_sentence_prediction and masked_lm model
             # print('@@@@@@@000000@@@@@@')
             # print(data["bert_input"])
             # print('@@@@@@@111111@@@@@@')
             # print(data["segment_label"])
             # print('@@@@@@@222222@@@@@@')
+            
+            # data["bert_input"]: input 단어 임베딩
+            # data["segment_label"]: input 문장구별 임베딩
             next_sent_output, mask_lm_output = self.model.forward(data["bert_input"], data["segment_label"])
 
             # 2-1. NLL(negative log likelihood) loss of is_next classification result
@@ -126,7 +131,7 @@ class BERTTrainer:
 
             # 2-2. NLLLoss of predicting masked token word
             mask_loss = self.criterion(mask_lm_output.transpose(1, 2), data["bert_label"])
-
+            
             # 2-3. Adding next_loss and mask_loss : 3.4 Pre-training Procedure
             loss = next_loss + mask_loss
 
@@ -151,6 +156,7 @@ class BERTTrainer:
             }
 
             if i % self.log_freq == 0:
+                # ???
                 data_iter.write(str(post_fix))
 
         print("EP%d_%s, avg_loss=" % (epoch, str_code), avg_loss / len(data_iter), "total_acc=",
