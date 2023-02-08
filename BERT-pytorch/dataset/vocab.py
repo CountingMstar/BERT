@@ -34,6 +34,7 @@ class TorchVocab(object):
                 returns a Tensor of the same size. Default: torch.Tensor.zero_
             vectors_cache: directory for cached vectors. Default: '.vector_cache'
         """
+        # counter: 글자수 세기
         self.freqs = counter
         counter = counter.copy()
         
@@ -42,12 +43,13 @@ class TorchVocab(object):
         self.itos = list(specials)
         # frequencies of special tokens are not counted when building vocabulary
         # in frequency order
-        # sepcial token은 카운트 하지 않음
+        # special token을 counter에서 지워 카운트하지 않기
         for tok in specials:
             del counter[tok]
 
         max_size = None if max_size is None else max_size + len(self.itos)
 
+        # counter의 단어들을 빈도수에 따라 정렬
         # sort by frequency, then alphabetically
         words_and_frequencies = sorted(counter.items(), key=lambda tup: tup[0])
         words_and_frequencies.sort(key=lambda tup: tup[1], reverse=True)
@@ -57,14 +59,17 @@ class TorchVocab(object):
                 break
             self.itos.append(word)
 
+        # list self.itos를 딕셔너리형태로 변환
         # stoi is simply a reverse dict for itos
         # stoi, itos가 vocab corpus
         self.stoi = {tok: i for i, tok in enumerate(self.itos)}
 
         self.vectors = None
         if vectors is not None:
+            # ???
             self.load_vectors(vectors, unk_init=unk_init, cache=vectors_cache)
         else:
+            # assert: 뒤의 조건문이 True가 아니면 AssertError발생
             assert unk_init is None and vectors_cache is None
 
     def __eq__(self, other):
@@ -99,6 +104,7 @@ class Vocab(TorchVocab):
         self.eos_index = 2
         self.sos_index = 3
         self.mask_index = 4
+        # 상속받은 부모 클래스
         super().__init__(counter, specials=["<pad>", "<unk>", "<eos>", "<sos>", "<mask>"],
                          max_size=max_size, min_freq=min_freq)
 
@@ -108,6 +114,7 @@ class Vocab(TorchVocab):
     def from_seq(self, seq, join=False, with_pad=False):
         pass
 
+    # vocab 불러오기 또는 저장
     @staticmethod
     def load_vocab(vocab_path: str) -> 'Vocab':
         with open(vocab_path, "rb") as f:
@@ -125,9 +132,11 @@ class WordVocab(Vocab):
         counter = Counter()
 
         for line in tqdm.tqdm(texts):
+            # isinstance(a, list): a가 list형인지 판별
             if isinstance(line, list):
                 words = line
             else:
+                # 교체작업
                 words = line.replace("\n", "").replace("\t", " ").split()
 
             for word in words:

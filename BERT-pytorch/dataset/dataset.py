@@ -35,20 +35,13 @@ class BERTDataset(Dataset):
         return self.corpus_lines
 
     def __getitem__(self, item):
-        # print('&&&&&&&&&&')
-        # print(item)
+        # 랜덤으로 뽑은 문장
         t1, t2, is_next_label = self.random_sent(item)
+        # 위 문장의 단어 인덱스
         t1_random, t1_label = self.random_word(t1)
         t2_random, t2_label = self.random_word(t2)
 
-        # print('#################')
-        # print(t1)
-        # print(t2)
-        # print(is_next_label)
-        # print('===============')
-        # print(t1_random)
-        # print(t1_label)
-
+        # 문장의 앞, 뒤에 시작, 끝 토큰 붙이기
         # [CLS] tag = SOS tag, [SEP] tag = EOS tag
         t1 = [self.vocab.sos_index] + t1_random + [self.vocab.eos_index]
         t2 = t2_random + [self.vocab.eos_index]
@@ -56,15 +49,13 @@ class BERTDataset(Dataset):
         t1_label = [self.vocab.pad_index] + t1_label + [self.vocab.pad_index]
         t2_label = t2_label + [self.vocab.pad_index]
 
+        # input의 세그먼트(문장1, 문장2)
         segment_label = ([1 for _ in range(len(t1))] + [2 for _ in range(len(t2))])[:self.seq_len]
-        # print('*************')
-        # print(len(t1))
-        # print(segment_label)
+        
+        # bert input
         bert_input = (t1 + t2)[:self.seq_len]
+        # ???
         bert_label = (t1_label + t2_label)[:self.seq_len]
-        # print(t1_label)
-        # print(bert_input)
-        # print(bert_label)
 
         padding = [self.vocab.pad_index for _ in range(self.seq_len - len(bert_input))]
         bert_input.extend(padding), bert_label.extend(padding), segment_label.extend(padding)
@@ -81,18 +72,22 @@ class BERTDataset(Dataset):
         output_label = []
 
         for i, token in enumerate(tokens):
+            # random.random(): 0 ~ 1사이의 난수 생성
             prob = random.random()
+            # 15%만 변환
             if prob < 0.15:
                 prob /= 0.15
-
+                # 그중 80%는 마스킹
                 # 80% randomly change token to mask token
                 if prob < 0.8:
                     tokens[i] = self.vocab.mask_index
 
+                # 10%는 다른 임의의 단어로 변환
                 # 10% randomly change token to random token
                 elif prob < 0.9:
                     tokens[i] = random.randrange(len(self.vocab))
 
+                # 나머지 10%는 unkown 처리(원래 논문에서는 원래 그대로)
                 # 10% randomly change token to current token
                 # self.vocab.stoi.get: 딕셔너리 원소값 부르기
                 else:
@@ -100,6 +95,7 @@ class BERTDataset(Dataset):
 
                 output_label.append(self.vocab.stoi.get(token, self.vocab.unk_index))
 
+            # 나머지 85%는 불변환 
             else:
                 tokens[i] = self.vocab.stoi.get(token, self.vocab.unk_index)
                 output_label.append(0)
@@ -109,6 +105,8 @@ class BERTDataset(Dataset):
     def random_sent(self, index):
         t1, t2 = self.get_corpus_line(index)
 
+        # 50%는 isnext, 나머지 50%는 notnext
+        # t1, t2는 이어진 문장을 나눈것
         # output_text, label(isNotNext:0, isNext:1)
         if random.random() > 0.5:
             return t1, t2, 1
